@@ -1,0 +1,90 @@
+;; Definición de signos y síntomas
+(deftemplate signo
+    (slot nombre)
+)
+
+(deftemplate sintoma
+    (slot nombre)
+)
+
+(deffacts signos-y-sintomas
+    (signo (nombre "dolor_de_cabeza"))
+    (signo (nombre "fiebre"))
+    (signo (nombre "tos"))
+    (signo (nombre "dolor_de_garganta"))
+    (signo (nombre "escalofrios"))
+    (signo (nombre "malestar_general"))
+    (sintoma (nombre "cansancio"))
+    (sintoma (nombre "nauseas"))
+    (sintoma (nombre "dolor_muscular"))
+    (sintoma (nombre "congestion_nasal"))
+    (sintoma (nombre "dolor_de_pecho"))
+    (sintoma (nombre "fatiga"))
+)
+
+;; Definición de las enfermedades y sus signos/síntomas
+(deftemplate enfermedad
+    (slot nombre)
+    (multislot signos)
+    (multislot sintomas)
+)
+
+(deffacts enfermedades
+    (enfermedad (nombre "gripe") (signos "dolor_de_cabeza" "fiebre") (sintomas "cansancio" "nauseas"))
+    (enfermedad (nombre "resfriado") (signos "dolor_de_cabeza" "fiebre" "tos" "dolor_de_garganta" "congestion_nasal") (sintomas))
+    (enfermedad (nombre "angina") (signos "dolor_de_pecho" "fiebre" "malestar_general") (sintomas))
+    (enfermedad (nombre "influenza") (signos "fiebre" "escalofrios" "dolor_muscular" "fatiga") (sintomas))
+    (enfermedad (nombre "bronquitis") (signos "tos" "fiebre" "malestar_general" "congestion_nasal") (sintomas))
+    (enfermedad (nombre "neumonia") (signos "tos" "fiebre" "malestar_general" "dolor_de_pecho") (sintomas))
+)
+
+;; Regla para obtener los síntomas de una enfermedad
+(defrule obtener-sintomas-enfermedad
+    (enfermedad (nombre ?nombre) (sintomas $?sintomas))
+    =>
+    (printout t "Los síntomas de la enfermedad " ?nombre " son: " ?sintomas crlf)
+)
+
+;; Regla para obtener los signos de una enfermedad
+(defrule obtener-signos-enfermedad
+    (enfermedad (nombre ?nombre) (signos $?signos))
+    =>
+    (printout t "Los signos de la enfermedad " ?nombre " son: " ?signos crlf)
+)
+
+;; Regla para obtener tanto los síntomas como los signos de una enfermedad
+(defrule obtener-sintomas-y-signos-enfermedad
+    (enfermedad (nombre ?nombre) (sintomas $?sintomas) (signos $?signos))
+    =>
+    (printout t "Los síntomas de la enfermedad " ?nombre " son: " ?sintomas crlf)
+    (printout t "Los signos de la enfermedad " ?nombre " son: " ?signos crlf)
+)
+
+;; Regla para obtener enfermedades que tienen un síntoma específico
+(defrule enfermedades-con-sintoma
+    (enfermedad (nombre ?nombre) (sintomas $?sintomas&:(member$ "nauseas" ?sintomas)))
+    =>
+    (printout t "La enfermedad " ?nombre " tiene el síntoma 'nauseas'" crlf)
+)
+
+;; Regla para obtener enfermedades que tienen un signo específico
+(defrule enfermedades-con-signo
+    (enfermedad (nombre ?nombre) (signos $?signos&:(member$ "dolor_de_cabeza" ?signos)))
+    =>
+    (printout t "La enfermedad " ?nombre " tiene el signo 'dolor_de_cabeza'" crlf)
+)
+
+;; Regla para encontrar una enfermedad que contenga tanto un signo como un síntoma específicos
+(defrule enfermedad-con-signo-y-sintoma
+    (enfermedad (nombre ?nombre) (signos $?signos&:(member$ "fiebre" ?signos)) (sintomas $?sintomas&:(member$ "cansancio" ?sintomas)))
+    =>
+    (printout t "La enfermedad " ?nombre " tiene el signo 'fiebre' y el síntoma 'cansancio'" crlf)
+)
+
+;; Regla para eliminar una enfermedad por su nombre
+(defrule eliminar-enfermedad
+    ?f <- (enfermedad (nombre "gripe"))
+    =>
+    (printout t "Eliminando la enfermedad " ?f " de la base de conocimiento" crlf)
+    (retract ?f)
+)
